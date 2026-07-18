@@ -118,6 +118,9 @@ impl PoolOps for VolumeGroup {
         &self,
         args: ReplicaArgs,
     ) -> Result<Box<dyn ReplicaOps>, crate::pool_backend::Error> {
+        if !args.properties.is_empty() {
+            return Err(Error::PropertiesNotSup {}.into());
+        }
         let replica = self.create_lvol(args).await?;
         Ok(Box::new(replica))
     }

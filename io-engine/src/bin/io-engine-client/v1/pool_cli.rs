@@ -281,12 +281,14 @@ impl From<Cipher> for v1rpc::common::Cipher {
 pub(super) enum PoolType {
     Lvs,
     Lvm,
+    Zfs,
 }
 impl From<PoolType> for v1rpc::pool::PoolType {
     fn from(value: PoolType) -> Self {
         match value {
             PoolType::Lvs => Self::Lvs,
             PoolType::Lvm => Self::Lvm,
+            PoolType::Zfs => Self::Zfs,
         }
     }
 }

@@ -39,6 +39,7 @@ pub mod sleep;
 pub mod store;
 pub mod subsys;
 pub mod target;
+pub mod zfs;
 
 /// TODO
 #[macro_export]

@@ -6,6 +6,7 @@ impl From<LvmError> for tonic::Status {
         match e {
             LvmError::InvalidPoolType { .. }
             | LvmError::VgUuidSet { .. }
+            | LvmError::PropertiesNotSup { .. }
             | LvmError::DisksMismatch { .. } => Status::invalid_argument(e.to_string()),
             LvmError::NotFound { .. } | LvmError::LvNotFound { .. } => {
                 Status::not_found(e.to_string())

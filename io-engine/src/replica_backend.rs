@@ -253,6 +253,7 @@ impl ReplicaFactory {
         Self(match backend {
             PoolBackend::Lvs => Box::<crate::lvs::ReplLvsFactory>::default() as _,
             PoolBackend::Lvm => Box::<crate::lvm::ReplLvmFactory>::default() as _,
+            PoolBackend::Zfs => Box::<crate::zfs::ReplZfsFactory>::default() as _,
         })
     }
     /// Get the given bdev as a `ReplicaOps`.

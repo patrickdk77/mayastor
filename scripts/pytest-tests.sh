@@ -157,6 +157,7 @@ tests/nexus
 
 v1/pool
 v1/replica
+v1/snapshot
 v1/nexus
 
 cross-grpc-version/pool

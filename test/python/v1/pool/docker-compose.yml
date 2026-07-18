@@ -11,9 +11,10 @@ services:
         - MY_POD_IP=10.1.0.2
         - NEXUS_NVMF_ANA_ENABLE=1
         - NEXUS_NVMF_RESV_ENABLE=1
-        - PATH=${LLVM_SYMBOLIZER_DIR:-}:${LVM_BINS:-}
+        - PATH=${LLVM_SYMBOLIZER_DIR:-}:${LVM_BINS:-}:${ZFS_BINS:-}
         - ASAN_OPTIONS=detect_leaks=0
         - ENABLE_LVM=true
+        - ENABLE_ZFS=true
     command: ${SRCDIR}/${IO_ENGINE_DIR}/io-engine -g 0.0.0.0 -l 1,2 -r /tmp/ms0.sock
     networks:
       mayastor_net:
@@ -33,6 +34,8 @@ services:
       - /dev/hugepages:/dev/hugepages
       - /tmp:/tmp
       - /var/tmp:/var/tmp
+      # the zfs CLI inside the container needs /dev/zfs to reach the kmod
+      - /dev:/dev
     # these should be enough... otherwise we can always make it privileged
     devices:
       - /dev/loop0

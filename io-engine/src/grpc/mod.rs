@@ -268,3 +268,12 @@ fn lvm_enabled() -> Result<(), Status> {
     }
     Ok(())
 }
+
+pub(crate) fn zfs_enabled() -> Result<(), Status> {
+    if !MayastorFeatures::get().zfs() {
+        return Err(Status::failed_precondition(
+            "ZFS support is not enabled, set ENABLE_ZFS=true",
+        ));
+    }
+    Ok(())
+}

@@ -28,7 +28,7 @@ macro_rules! impl_properties {
             }
             $(
                 /// If the property is $name then get its value.
-                #[allow(non_snake_case)]
+                #[allow(non_snake_case, dead_code)]
                 pub(super) fn $name(self) -> Option<$value> {
                     match self {
                         Self::$name(value) => Some(value),

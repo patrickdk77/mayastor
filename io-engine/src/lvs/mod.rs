@@ -146,6 +146,14 @@ impl PoolOps for Lvs {
         &self,
         args: ReplicaArgs,
     ) -> Result<Box<dyn ReplicaOps>, crate::pool_backend::Error> {
+        if !args.properties.is_empty() {
+            return Err(LvsError::Invalid {
+                source: BsError::InvalidArgument {},
+                msg: "backend-specific replica properties are not supported by the LVS backend"
+                    .to_string(),
+            }
+            .into());
+        }
         let lvol = self.create_lvol_with_opts(args).await?;
         Ok(Box::new(lvol))
     }

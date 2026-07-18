@@ -316,6 +316,8 @@ pub struct MayastorFeatures {
     pub asymmetric_namespace_access: bool,
     /// When set to true, support for lvm pools and volumes is enabled.
     pub logical_volume_manager: bool,
+    /// When set to true, support for zfs pools and volumes is enabled.
+    pub zfs: bool,
     /// When set to true, support for snapshot rebuild is enabled.
     pub snapshot_rebuild: bool,
     /// When set to true, the io-engine instance supports RDMA transport.
@@ -329,6 +331,11 @@ impl MayastorFeatures {
     /// Check if LVM feature is enabled.
     pub fn lvm(&self) -> bool {
         self.logical_volume_manager
+    }
+
+    /// Check if ZFS feature is enabled.
+    pub fn zfs(&self) -> bool {
+        self.zfs
     }
 
     /// Get nvmf target's rdma feature state.

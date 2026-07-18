@@ -271,6 +271,11 @@ pub struct MayastorCliArgs {
     /// be set to 1.
     #[clap(long = "enable-lvm", env = "ENABLE_LVM", value_parser = delay_compat)]
     pub lvm: bool,
+    /// Enables experimental ZFS backend support. {n}
+    /// ZFS pools can then be created by specifying the ZFS pool type. {n}
+    /// The disks entry is a ZFS dataset path, eg: tank/data.
+    #[clap(long = "enable-zfs", env = "ENABLE_ZFS", value_parser = delay_compat)]
+    pub zfs: bool,
     /// Enables experimental Snapshot Rebuild support.
     #[clap(long = "enable-snapshot-rebuild", env = "ENABLE_SNAPSHOT_REBUILD", value_parser = delay_compat)]
     pub snap_rebuild: bool,
@@ -412,12 +417,14 @@ impl MayastorFeatures {
     fn init_features() -> MayastorFeatures {
         let ana = env::var("NEXUS_NVMF_ANA_ENABLE").as_deref() == Ok("1");
         let lvm = env::var("ENABLE_LVM").as_deref() == Ok("true");
+        let zfs = env::var("ENABLE_ZFS").as_deref() == Ok("true");
         let snapshot_rebuild = env::var("ENABLE_SNAPSHOT_REBUILD").as_deref() == Ok("true");
         let rdma_capable_io_engine = env::var("ENABLE_RDMA").as_deref() == Ok("true");
         let diskpool_encryption = env::var("ENABLE_DISKPOOL_ENCRYPTION").as_deref() == Ok("true");
         MayastorFeatures {
             asymmetric_namespace_access: ana,
             logical_volume_manager: lvm,
+            zfs,
             snapshot_rebuild,
             rdma_capable_io_engine,
             diskpool_encryption,
@@ -621,6 +628,9 @@ async fn do_shutdown(arg: *mut c_void) {
     crate::lvs::Lvs::export_all().await;
     if MayastorFeatures::get().lvm() {
         crate::lvm::VolumeGroup::export_all().await;
+    }
+    if MayastorFeatures::get().zfs() {
+        crate::zfs::ZfsPool::export_all().await;
     }
 
     unsafe {

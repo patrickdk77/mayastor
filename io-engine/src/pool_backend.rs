@@ -47,6 +47,7 @@ pub enum PoolBackend {
     #[default]
     Lvs,
     Lvm,
+    Zfs,
 }
 
 /// Arguments for replica creation.
@@ -59,6 +60,9 @@ pub struct ReplicaArgs {
     pub entity_id: Option<String>,
     pub use_extent_table: Option<bool>,
     pub wipe_super: bool,
+    /// Backend-specific creation properties (eg: zfs volblocksize).
+    /// Backends without property support reject any non-empty list.
+    pub properties: Vec<(String, String)>,
 }
 impl ReplicaArgs {
     /// Create [`ReplicaArgs`] with the given name and size.
@@ -117,6 +121,8 @@ pub enum Error {
     #[snafu(display("{source}"))]
     Lvm { source: crate::lvm::Error },
     #[snafu(display("{source}"))]
+    Zfs { source: crate::zfs::Error },
+    #[snafu(display("{source}"))]
     Gen { source: GenericError },
 }
 impl From<crate::lvs::LvsError> for Error {
@@ -129,6 +135,11 @@ impl From<crate::lvm::Error> for Error {
         Self::Lvm { source }
     }
 }
+impl From<crate::zfs::Error> for Error {
+    fn from(source: crate::zfs::Error) -> Self {
+        Self::Zfs { source }
+    }
+}
 impl From<GenericError> for Error {
     fn from(source: GenericError) -> Self {
         Self::Gen { source }
@@ -139,6 +150,7 @@ impl From<Error> for tonic::Status {
         match e {
             Error::Lvs { source } => source.into(),
             Error::Lvm { source } => source.into(),
+            Error::Zfs { source } => source.into(),
             Error::Gen { source } => source.into(),
         }
     }
@@ -148,6 +160,7 @@ impl ToErrno for Error {
         match self {
             Error::Lvs { source } => source.to_errno(),
             Error::Lvm { source } => source.to_errno(),
+            Error::Zfs { source } => source.to_errno(),
             Error::Gen { source } => source.to_errno(),
         }
     }
@@ -274,7 +287,7 @@ pub struct PoolFactory(Box<dyn IPoolFactory>);
 impl PoolFactory {
     /// Get all available backends.
     pub fn all_backends() -> Vec<PoolBackend> {
-        vec![PoolBackend::Lvm, PoolBackend::Lvs]
+        vec![PoolBackend::Lvm, PoolBackend::Zfs, PoolBackend::Lvs]
     }
     /// Get all **enabled** backends.
     pub fn backends() -> Vec<PoolBackend> {
@@ -290,6 +303,7 @@ impl PoolFactory {
         Self(match backend {
             PoolBackend::Lvs => Box::<crate::lvs::PoolLvsFactory>::default() as _,
             PoolBackend::Lvm => Box::<crate::lvm::PoolLvmFactory>::default() as _,
+            PoolBackend::Zfs => Box::<crate::zfs::PoolZfsFactory>::default() as _,
         })
     }
     /// Probe backends for the given name and/or uuid and return the right one.

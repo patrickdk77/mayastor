@@ -261,7 +261,7 @@ impl TryFrom<CreatePoolRequest> for PoolArgs {
             source: BsError::InvalidArgument {},
             msg: format!("invalid pooltype provided: {}", args.pooltype),
         })?;
-        if backend == PoolType::Lvs {
+        if backend == PoolType::Lvs || backend == PoolType::Zfs {
             if let Some(s) = args.uuid.clone() {
                 let _uuid = uuid::Uuid::parse_str(s.as_str()).map_err(|e| LvsError::Invalid {
                     source: BsError::InvalidArgument {},
@@ -295,6 +295,7 @@ impl From<PoolType> for PoolBackend {
         match value {
             PoolType::Lvs => Self::Lvs,
             PoolType::Lvm => Self::Lvm,
+            PoolType::Zfs => Self::Zfs,
         }
     }
 }
@@ -303,6 +304,7 @@ impl From<PoolBackend> for PoolType {
         match value {
             PoolBackend::Lvs => Self::Lvs,
             PoolBackend::Lvm => Self::Lvm,
+            PoolBackend::Zfs => Self::Zfs,
         }
     }
 }
@@ -409,6 +411,7 @@ impl PoolGrpc {
                 thin: args.thin,
                 entity_id: args.entity_id,
                 wipe_super: true,
+                properties: args.properties.into_iter().collect(),
                 ..Default::default()
             })
             .await
@@ -656,6 +659,7 @@ impl PoolBackend {
         match self {
             PoolBackend::Lvs => Ok(()),
             PoolBackend::Lvm => crate::grpc::lvm_enabled(),
+            PoolBackend::Zfs => crate::grpc::zfs_enabled(),
         }
     }
 }

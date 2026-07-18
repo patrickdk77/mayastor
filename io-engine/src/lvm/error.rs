@@ -58,6 +58,8 @@ pub enum Error {
     Exists { error: String },
     #[snafu(display("Snapshots are not currently supported for LVM volumes"))]
     SnapshotNotSup {},
+    #[snafu(display("Backend-specific replica properties are not supported for LVM volumes"))]
+    PropertiesNotSup {},
     #[snafu(display("Pool expansion is not currently supported for LVM volumes"))]
     GrowNotSup {},
     #[snafu(display("{error}"))]
@@ -97,6 +99,7 @@ impl ToErrno for Error {
             Error::NoSpace { .. } => Errno::ENOSPC,
             Error::Exists { .. } => Errno::EEXIST,
             Error::SnapshotNotSup { .. } => Errno::ENOTSUP,
+            Error::PropertiesNotSup { .. } => Errno::EINVAL,
             Error::GrowNotSup { .. } => Errno::ENOTSUP,
             Error::Internal { .. } => Errno::EPIPE,
         }

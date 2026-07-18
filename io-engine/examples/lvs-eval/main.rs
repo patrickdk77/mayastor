@@ -177,6 +177,7 @@ async fn create_lvol(
         entity_id: None,
         use_extent_table: Some(et),
         wipe_super: true,
+        properties: Vec::new(),
     };
 
     lvs.create_lvol_with_opts(opts).await.map_err(|err| {
